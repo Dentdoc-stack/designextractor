@@ -19,6 +19,8 @@ The seven families are extracted from the boards in `.claude/skills/report-desig
 | F | Docoro Royal Block | Docoro | healthcare services brochures |
 | G | Market Frame | Market | consulting, white papers, proposals |
 
+Design system for building documents like the boards: [`DESIGN.md`](DESIGN.md).
+
 Quick start:
 
 ```bash
