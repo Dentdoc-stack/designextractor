@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "title": "Cutting the cost of the last mile",
+    "short_title": "Northgate Freight \u2014 Operating-model review",
+    "subtitle": "Where regional delivery spend leaks, and what to change first",
+    "type_label": "Advisory report",
+    "client": "Northgate Freight (fictional)",
+    "author": "Illustrative Advisory Group",
+    "date": "October 2026",
+    "version": "Draft 1.0",
+    "illustrative": true
+  },
+  "blocks": [
+    { "type": "cover", "variant": "slab" },
+    { "type": "contents", "note": "All company names, figures and sources in this sample are invented to demonstrate the layouts." },
+    {
+      "type": "summary",
+      "title": "Executive summary",
+      "lead": "Northgate can lower cost per delivered parcel by roughly 11% within 12 months, without cutting service levels, by fixing three things in order: route density, depot dwell time and carrier mix.",
+      "figures": [
+        { "value": "11", "unit": "%", "label": "Projected reduction in cost per parcel (central case)" },
+        { "value": "4.2", "unit": "M", "label": "Annual saving in illustrative currency units" },
+        { "value": "9", "unit": " mo", "label": "Payback on one-off investment" }
+      ],
+      "points": [
+        "**Density, not distance, drives cost.** Routes below 62 stops per round account for 38% of mileage but only 21% of volume.[^1]",
+        "**Dwell time is the hidden queue.** Median parcels wait 5.3 hours between arrival and van loading at the three largest depots.[^2]",
+        "**Carrier mix is out of balance.** Third-party carriers cover 24% of volume at a unit cost 17% above in-house rounds on comparable routes.[^3]",
+        "**Sequencing matters.** Dwell-time fixes unlock capacity that makes the density redesign cheaper to deliver."
+      ],
+      "after": [
+        { "callout": "Decisions requested: approve the Phase 1 pilot at two depots, release the routing-software budget, and agree the carrier renegotiation mandate.", "label": "Decision" }
+      ]
+    },
+    { "type": "opener", "number": "01", "title": "Where the network stands", "label": "Section 01 \u2014 Baseline", "intro": "A picture of volumes, routes and unit costs across 14 depots, drawn from twelve months of operating data." },
+    {
+      "type": "narrative",
+      "title": "A network built for yesterday's volumes",
+      "kicker": "Baseline",
+      "lead": "Northgate grew by acquisition. Its 14 depots, 212 daily rounds and five carrier contracts reflect the history of the business more than the shape of present demand.",
+      "items": [
+        "Between 2023 and 2025 parcel volume grew 31%, while the number of rounds grew only 9%. The difference was absorbed by longer working days and by third-party carriers, which now handle roughly one parcel in four.[^1] Neither response is cheap. Overtime rose to 7.4% of paid hours, and the third-party rate card was last renegotiated in 2022.",
+        { "note": "A *round* is one driver's scheduled delivery run from a single depot. Figures here count rounds per weekday.", "label": "Definition" },
+        "The network is not uniformly stretched. Four urban depots run dense, profitable rounds with more than 80 stops each. Eight regional depots run sparse rounds, and two coastal depots are seasonal. Averages hide this spread, which is why earlier cost reviews, which focused on network-wide benchmarks, found nothing to act on.",
+        { "quote": "The average round looks fine. Almost no round is average.", "by": "Interview, regional operations lead" },
+        { "h": "How the data was assembled" },
+        "Route-level data covers 1 October 2025 to 30 September 2026 and was supplied by Northgate's operations team. Cost data was matched to routes using the finance cost-centre map.[^2] Where a depot could not supply scan timestamps, dwell time was estimated from gate logs, and those estimates are flagged in the appendix.",
+        { "note": "Three depots reported dwell time from gate logs, not parcel scans. See Appendix A.", "label": "Data quality" },
+        "Long paragraphs, lists and subheads are expected in this layout: the text column keeps a comfortable measure, and margin notes remain beside the passage they qualify, even when a section runs onto a second page."
+      ]
+    },
+    {
+      "type": "data",
+      "title": "Density is the main cost lever",
+      "kicker": "Analysis",
+      "lead": "Stops per round varies from 41 to 94. Cost per parcel falls steeply until about 62 stops, then flattens.",
+      "kpis": [
+        { "value": "212", "label": "Daily rounds across 14 depots" },
+        { "value": "62", "label": "Stops per round: break-even density", "accent": true },
+        { "value": "38", "unit": "%", "label": "Share of mileage on sub-62 routes" },
+        { "value": "7.4", "unit": "%", "label": "Overtime as share of paid hours" }
+      ],
+      "items": [
+        { "chart": {
+            "kind": "bar", "title": "Cost per parcel by stops per round", "unit": "Illustrative currency units per parcel",
+            "categories": ["<50", "50\u201359", "60\u201369", "70\u201379", "80+"],
+            "series": [{ "name": "Cost per parcel", "values": [3.9, 3.4, 2.7, 2.5, 2.4] }],
+            "highlight": 2, "format": "{:.1f}", "height_mm": 56,
+            "source": "Illustrative data, Northgate route log (invented for this sample)."
+        } },
+        { "table": {
+            "title": "Round profile by depot group",
+            "header": ["Depot group", "Depots", "Rounds", "Stops / round", "Cost / parcel", "Overtime"],
+            "rows": [
+              ["Urban core", "4", "96", "84", "2.41", "4.1%"],
+              ["Regional", "8", "98", "58", "3.12", "8.9%"],
+              ["Coastal (seasonal)", "2", "18", "47", "3.88", "11.2%"],
+              ["Network", "14", "212", "67", "2.97", "7.4%"]
+            ],
+            "highlight_col": 4, "total_row": true,
+            "source": "Illustrative data."
+        } }
+      ],
+      "takeaway": "Moving the 98 regional rounds from 58 to 62 stops would remove the cost penalty on most of them, without adding vehicles."
+    },
+    { "type": "opener", "number": "02", "title": "What is driving the cost", "label": "Section 02 \u2014 Diagnosis", "intro": "Three mechanisms explain most of the gap between Northgate's best and worst rounds." },
+    {
+      "type": "narrative",
+      "title": "Three mechanisms behind the gap",
+      "kicker": "Diagnosis",
+      "lead": "Dwell time, route design and carrier mix interact. Treating them separately would understate the opportunity.",
+      "layout": "twocol",
+      "items": [
+        { "h": "Dwell time" },
+        "At the three largest depots the median parcel waits 5.3 hours between arrival and van loading. Part of that wait is deliberate sorting. Most is queueing behind late inbound trailers and a single manifest cut-off at 06:30.[^2] Late loading forces drivers to leave after 08:00, which pushes the last third of their stops into peak traffic.",
+        { "h": "Route design" },
+        "Rounds are drawn on postcode boundaries set in 2019. Since then, two new housing developments and a logistics park have shifted demand. Three adjacent rounds in the north-east serve overlapping streets at different times of day, each with a low drop density.",
+        { "bullets": [
+            "Round boundaries unchanged since 2019 in 11 of 14 depots.",
+            "Median stop spacing 31% higher on regional rounds than on urban ones.",
+            "No weekly re-optimisation; changes only at quarterly reviews."
+        ] },
+        { "h": "Carrier mix" },
+        "Third-party carriers are used as overflow, not by design. On comparable routes their unit cost is 17% above in-house rounds, and service scores are two points lower.[^3] Their share is highest exactly where in-house rounds are shortest of drivers, which suggests the root cause is scheduling, not carrier capability.",
+        { "callout": "The three mechanisms compound: late loading shortens the working day, shorter days leave routes undercovered, and undercovered routes are handed to the most expensive option.", "label": "Interaction" },
+        { "h": "What the data does not explain" },
+        "Several explanations were tested and set aside. Fleet age shows no relationship with cost per parcel once route density is controlled for. Driver tenure is weakly associated with on-time delivery but not with cost. Fuel price movements affect all depots alike and do not explain the spread between them.",
+        "Two questions remain open: whether the manifest cut-off has a contractual basis, and whether the coastal depots need a separate, seasonal benchmark. Both are flagged for the pilot.",
+        { "h": "Why the order of fixes matters" },
+        "Redrawing rounds before fixing dwell time would build new routes on an unstable loading schedule. Fixing carrier mix first would lock in volume commitments before demand per round is known."
+      ]
+    },
+    {
+      "type": "data",
+      "title": "Depot-by-depot performance",
+      "kicker": "Data appendix to Section 02",
+      "lead": "Dense tables run in landscape with a repeating header row, tabular figures and no splitting of rows across pages.",
+      "landscape": true,
+      "items": [
+        { "table": {
+            "title": "Operating metrics by depot, twelve months to September 2026 (illustrative)",
+            "header": ["Depot", "Group", "Rounds", "Stops / round", "Median dwell (h)", "Overtime", "3rd-party share", "Cost / parcel", "On-time %", "Complaints / 1k"],
+            "rows": [
+              ["Aldermoor", "Urban core", "31", "88", "4.6", "3.9%", "11%", "2.31", "97.1", "2.4"],
+              ["Brackenfield", "Urban core", "27", "84", "5.1", "4.2%", "14%", "2.38", "96.8", "2.7"],
+              ["Carrowgate", "Urban core", "22", "81", "5.3", "4.4%", "15%", "2.44", "96.5", "2.9"],
+              ["Dunmere", "Urban core", "16", "83", "5.0", "4.0%", "12%", "2.51", "96.9", "2.6"],
+              ["Eastholme", "Regional", "15", "59", "5.8", "8.1%", "22%", "3.02", "94.8", "4.1"],
+              ["Fenwick", "Regional", "14", "61", "5.6", "8.4%", "25%", "3.00", "94.6", "4.4"],
+              ["Garrowby", "Regional", "13", "57", "6.0", "9.2%", "27%", "3.19", "93.9", "4.8"],
+              ["Hartwell", "Regional", "13", "58", "5.9", "9.0%", "28%", "3.14", "94.1", "4.6"],
+              ["Ironbridge", "Regional", "12", "60", "5.4", "8.7%", "24%", "3.05", "94.7", "4.3"],
+              ["Jesmond Vale", "Regional", "12", "56", "6.2", "9.5%", "29%", "3.27", "93.5", "5.0"],
+              ["Kingsley", "Regional", "10", "55", "6.1", "9.3%", "26%", "3.20", "93.8", "4.9"],
+              ["Lowmoor", "Regional", "9", "57", "5.7", "8.8%", "23%", "3.16", "94.2", "4.5"],
+              ["Marram Bay", "Coastal", "10", "48", "6.4", "11.0%", "31%", "3.84", "92.4", "5.6"],
+              ["Netherby Sands", "Coastal", "8", "46", "6.6", "11.5%", "33%", "3.93", "92.0", "5.9"],
+              ["Network", "", "212", "67", "5.3", "7.4%", "24%", "2.97", "95.0", "3.9"]
+            ],
+            "highlight_col": 7, "total_row": true,
+            "note": "Dwell time for Garrowby, Hartwell and Jesmond Vale estimated from gate logs.",
+            "source": "Illustrative data (invented for this sample)."
+        } }
+      ]
+    },
+    {
+      "type": "findings",
+      "title": "Findings and recommendations",
+      "kicker": "Recommendations",
+      "lead": "Four actions, ordered by dependency rather than by size of prize.",
+      "items": [
+        { "title": "Remove the single manifest cut-off", "body": "Stagger manifest release in three waves between 05:00 and 07:00 at the three largest depots. This cuts median dwell and lets drivers leave before peak traffic.", "meta": { "Priority": "High", "Owner": "Head of depot operations", "Timing": "Weeks 1\u20138", "Effect": "~3.8% cost / parcel" } },
+        { "title": "Redraw regional rounds to 62 stops", "body": ["Rebuild rounds around density, not postcode boundaries, starting with the north-east cluster. Adopt weekly re-optimisation in the routing tool.", "Pilot at two depots before scaling, so the savings estimate can be checked against real stop counts."], "meta": { "Priority": "High", "Owner": "Network planning", "Timing": "Weeks 6\u201330", "Effect": "~4.9% cost / parcel" } },
+        { "title": "Re-tender third-party volume", "body": "Move from overflow use to two contracted carriers with committed volumes and a quality clause. Bring back in-house any route that exceeds in-house unit cost by more than 10%.", "meta": { "Priority": "Medium", "Owner": "Procurement", "Timing": "Weeks 12\u201340", "Effect": "~2.3% cost / parcel" } },
+        { "title": "Track four measures weekly", "body": "Stops per round, median dwell, overtime share and third-party share, reported by depot to the same operating review.", "meta": { "Priority": "Medium", "Owner": "Finance and operations", "Timing": "From week 4", "Effect": "Enabler" } }
+      ]
+    },
+    {
+      "type": "references",
+      "title": "References",
+      "items": [
+        "Northgate Freight (fictional). *Route performance log, October 2025\u2013September 2026.* Operations data extract, invented for this sample.",
+        "Northgate Freight (fictional). *Depot gate and scan timestamps, FY2026.* Operations data extract, invented for this sample.",
+        "Northgate Freight (fictional). *Carrier rate cards and invoice reconciliation, 2022\u20132026.* Procurement file, invented for this sample.",
+        "Illustrative Advisory Group. *Method note: matching cost centres to routes.* Internal working paper, invented for this sample."
+      ]
+    },
+    {
+      "type": "appendix",
+      "title": "Appendix A \u2014 Method and data quality",
+      "kicker": "Appendix",
+      "items": [
+        "Cost per parcel is total depot delivery cost (drivers, vehicles, fuel, third-party invoices) divided by parcels delivered, matched to routes via the finance cost-centre map.[^4]",
+        { "table": {
+            "title": "Data quality flags",
+            "header": ["Item", "Source", "Flag", "Treatment"],
+            "rows": [
+              ["Dwell time, Garrowby", "Gate log", "Estimated", "Gate-in to first van scan; excludes sort time"],
+              ["Dwell time, Hartwell", "Gate log", "Estimated", "As above"],
+              ["Dwell time, Jesmond Vale", "Gate log", "Estimated", "As above"],
+              ["Overtime", "Payroll", "Complete", "Paid hours above contract"],
+              ["Third-party share", "Invoices", "Complete", "Parcels invoiced \u00f7 parcels delivered"]
+            ]
+        } },
+        { "image": { "title": "Depot map with round boundaries", "alt": "Map of the 14 depots and 2019 round boundaries. Source file not yet supplied.", "height_mm": 62, "caption": "Placeholder: replace with the supplied map when available." } }
+      ]
+    },
+    { "type": "closing", "headline": "Start with the queue at the depot gate.", "notes": [["About this sample", "This report is an illustrative sample prepared to demonstrate a report design system. Its company, data and sources are invented."], ["Typefaces", "IBM Plex Serif and IBM Plex Sans, used under the SIL Open Font License."]] }
+  ]
+}
