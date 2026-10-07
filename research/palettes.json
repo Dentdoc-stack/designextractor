@@ -45,7 +45,7 @@
       "accent_bright": "0339A6",
       "accent_tint": "E9F1FF",
       "on_accent": "FFFFFF",
-      "signal": "B35100",
+      "signal": "A65A00",
       "tint": "F0F0F0",
       "grey": "5C5C5C"
     },
@@ -75,7 +75,7 @@
       "accent_bright": "01A19A",
       "accent_tint": "D4F9F5",
       "on_accent": "FFFFFF",
-      "signal": "B15000",
+      "signal": "AD5300",
       "tint": "EEEEEE",
       "grey": "5C5C5C"
     },
@@ -166,15 +166,15 @@
       "accent_bright": "57B848",
       "accent_tint": "E2F7DE",
       "on_accent": "141414",
-      "signal": "D02940",
+      "signal": "C0318F",
       "tint": "F0F0F0",
       "grey": "5C5C5C"
     },
     "chart_series": [
       "B1E5A9",
-      "86CF7A",
       "57B848",
-      "358A27",
+      "389A27",
+      "247B14",
       "105E00"
     ]
   }

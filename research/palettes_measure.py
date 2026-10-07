@@ -332,7 +332,7 @@ def pick_signal(refs_hex, backgrounds):
         L, hx = find_L(H, 0.20, 4.5, backgrounds)
         score = min(min(de2000(hx, r), de2000(simulate(hx, "deutan"), simulate(r, "deutan")),
                         de2000(simulate(hx, "protan"), simulate(r, "protan"))) for r in refs_hex)
-        score -= 0.05 * abs(((H - 30 + 180) % 360) - 180)   # mild preference for a true red-orange
+        score -= 0.3 * abs(((H - 30 + 180) % 360) - 180)    # preference for a true red-orange (OKLCH h 30)
         if best is None or score > best[0]: best = (score, hx, H)
     return best[1]
 
