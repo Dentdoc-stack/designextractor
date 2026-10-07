@@ -46,11 +46,12 @@ def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def r_xml(text, font=None, size=10, color=None, bold=False, italic=False, track=0):
+def r_xml(text, font=None, size=10, color=None, bold=False, italic=False, track=0, sup=False):
     font, color = font or CFG["font"], color or CFG["ink"]
     rpr = (f'<w:rFonts w:ascii="{font}" w:hAnsi="{font}" w:cs="{font}" w:eastAsia="{font}"/>'
            f'{"<w:b/>" if bold else ""}{"<w:i/>" if italic else ""}<w:color w:val="{color}"/>'
-           f'{f"<w:spacing w:val=\"{track}\"/>" if track else ""}<w:sz w:val="{int(size * 2)}"/><w:szCs w:val="{int(size * 2)}"/>')
+           f'{f"<w:spacing w:val=\"{track}\"/>" if track else ""}<w:sz w:val="{int(size * 2)}"/><w:szCs w:val="{int(size * 2)}"/>'
+           f'{"<w:vertAlign w:val=\"superscript\"/>" if sup else ""}')
     parts = esc(text).split("\n")
     body = '<w:br/>'.join(f'<w:t xml:space="preserve">{t}</w:t>' for t in parts)
     return f'<w:r {NS}><w:rPr>{rpr}</w:rPr>{body}</w:r>'
@@ -140,8 +141,29 @@ def save(name):
     return out
 
 
-def page(top=24, bottom=20, left=22, right=20, folio=True, header_shapes=()):
-    """Start a new page as its own section. header_shapes: callables(run) drawn behind text."""
+def _folio(fp, left, right):
+    width = 210 - left - right
+    fp.paragraph_format.line_spacing = Pt(10)
+    fp.paragraph_format.tab_stops.add_tab_stop(Mm(width), WD_TAB_ALIGNMENT.RIGHT)
+    fp._p.append(parse_xml(r_xml(CFG["footer"], CFG["font"], 6.5, CFG["soft"], track=20)))
+    fp._p.append(parse_xml(f'<w:r {NS}><w:tab/></w:r>'))
+    fp._p.append(parse_xml(f'<w:fldSimple {NS} w:instr="PAGE">{r_xml("1", CFG["font"] + " SemiBold", 7.5, CFG["soft"])}</w:fldSimple>'))
+
+
+def _reset(hf):
+    hf.is_linked_to_previous = False
+    p = hf.paragraphs[0]
+    for r in list(p.runs):
+        r._r.getparent().remove(r._r)
+    p.paragraph_format.space_after = Pt(0)
+    p.paragraph_format.line_spacing_rule = WD_LINE_SPACING.EXACTLY
+    p.paragraph_format.line_spacing = Pt(1)
+    return p
+
+
+def page(top=24, bottom=20, left=22, right=20, folio=True, header_shapes=(), first_header_shapes=None):
+    """Start a new section on a new page. header_shapes: callables(run) drawn behind text on every page of
+    the section; first_header_shapes: drawn on the section's first page only (its own header)."""
     if _first_section[0]:
         sec = doc.sections[0]
         _first_section[0] = False
@@ -150,25 +172,16 @@ def page(top=24, bottom=20, left=22, right=20, folio=True, header_shapes=()):
     sec.page_width, sec.page_height = Mm(210), Mm(297)
     sec.top_margin, sec.bottom_margin, sec.left_margin, sec.right_margin = Mm(top), Mm(bottom), Mm(left), Mm(right)
     sec.header_distance, sec.footer_distance = Mm(6), Mm(10)
-    for hf in (sec.header, sec.footer):
-        hf.is_linked_to_previous = False
-        p = hf.paragraphs[0]
-        for r in list(p.runs):
-            r._r.getparent().remove(r._r)
-        p.paragraph_format.space_after = Pt(0)
-        p.paragraph_format.line_spacing_rule = WD_LINE_SPACING.EXACTLY
-        p.paragraph_format.line_spacing = Pt(1)
-    hp = sec.header.paragraphs[0]
-    for draw in header_shapes:
-        draw(hp.add_run())
-    fp = sec.footer.paragraphs[0]
-    if folio:
-        width = 210 - left - right
-        fp.paragraph_format.line_spacing = Pt(10)
-        fp.paragraph_format.tab_stops.add_tab_stop(Mm(width), WD_TAB_ALIGNMENT.RIGHT)
-        fp._p.append(parse_xml(r_xml(CFG["footer"], CFG["font"], 6.5, CFG["soft"], track=20)))
-        fp._p.append(parse_xml(f'<w:r {NS}><w:tab/></w:r>'))
-        fp._p.append(parse_xml(f'<w:fldSimple {NS} w:instr="PAGE">{r_xml("1", CFG["font"] + " SemiBold", 7.5, CFG["soft"])}</w:fldSimple>'))
+    sec.different_first_page_header_footer = first_header_shapes is not None
+    pairs = [(sec.header, sec.footer, header_shapes)]
+    if first_header_shapes is not None:
+        pairs.append((sec.first_page_header, sec.first_page_footer, first_header_shapes))
+    for hdr, ftr, shapes in pairs:
+        hp, fp = _reset(hdr), _reset(ftr)
+        for draw in shapes:
+            draw(hp.add_run())
+        if folio:
+            _folio(fp, left, right)
     return sec
 
 
