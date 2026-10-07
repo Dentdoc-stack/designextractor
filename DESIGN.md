@@ -1,6 +1,6 @@
 # DESIGN.md: Report designs from the 7 reference boards
 
-This file turns the seven Pinterest boards into **seven document designs** you can build. Each design has measured colours, fonts and A4 page layouts in mm and pt, and is written for printed and PDF reports (DOCX or HTML), not slides.
+This file turns the seven Pinterest boards into **seven document designs** you can build, plus **H Spectrum**, a coordinated multicolour system for documents with several programmes or themes. Each design has measured colours, fonts and A4 page layouts in mm and pt, and is written for printed and PDF reports (DOCX or HTML), not slides.
 
 Boards: `.claude/skills/report-design/references/images/ref-A … ref-G.jpeg`, the same files as the WhatsApp images in the repo root.
 Evidence: every colour was measured from the image pixels and every contrast ratio was computed. Font names are best guesses (the thumbnails are too small to be sure), so each one has a free OFL substitute. Pages the boards never show (data tables, long reading pages, appendices) are marked *(inferred)*.
@@ -42,6 +42,7 @@ Only **A is a real report**. B–G are slide templates, so their slides are tran
 | Healthcare services brochure, KPI-led health review (with photos) | **F Docoro Royal Block** | E | Bold, photo-led, big numbers |
 | Marketing brochure, product or agency profile | **D Prism Rounded** | G | Friendly, expressive, shapes carry the identity |
 | Portfolio / profile **in dark mode, on screen** | **B Forest Breakslide** | D | Only when dark is asked for; never for office print or long text |
+| Impact, annual or city report with **3–5 programmes, services or themes**, where colour-coding helps readers navigate | **H Spectrum** (multicolour) | A | Each section owns one colour; the colours meet only on overview pages |
 
 Hard rules:
 - **No photos** → don't use B or F.
@@ -63,7 +64,7 @@ For a scored decision with a page-by-page plan, run `python3 .claude/skills/desi
 - Body text is **left-aligned and ragged right**. Never justify it, never centre it (centring is fine for team grids and KPI cells).
 
 ### 3.2 Colour
-- **One accent hue per document**, in four roles:
+- **One accent hue per document** (except H Spectrum, which uses one hue *per section*; see §4.H), in four roles:
   - `accent`: fills, panels, slabs.
   - `accent_deep`: **all small accent text**, and panels that carry small white text. It must be at least 4.5:1 on white, ideally 7:1.
   - `accent_bright`: large fills, numerals of 24 pt and up, the chart highlight.
@@ -591,6 +592,72 @@ The **title dot**:
 - **Closing**: vertical tab; bright right panel with "NEXT STEPS" 28 pt; check-chips with ink text.
 
 **Don't copy:** small white text on bright teal, a frame shape that changes from page to page (keep it constant), the placeholder "WWW.EXAMPLE.COM" kicker, trailing full stops on every heading.
+
+---
+
+### H. Spectrum (multicolour)
+
+**Identity.** A designer-grade multicolour system, not a rainbow. Dark ink and white carry the document; **each section owns one colour**, and the five colours appear together only where the whole is shown (cover, contents, overview, finance, back cover), always in the same order. It borrows A's full-colour cover and big-number KPIs, F's bled blocks, and G's tab-off-the-edge idea, turned into a wayfinding strip.
+**Use for** impact reports, foundation, city or group annual reviews, and ESG reports organised by pillar: documents with 3–5 programmes, services or themes, 10–30 pages. Not for a single-topic report; use one accent there.
+
+```
+--ink:      #16213E   /* text, cover, back cover (15.9:1) */
+--soft:     #5A5F6E   /* captions */
+--rule:     #D9D9D9
+/* section colours, in this fixed order (validated: lightness band, chroma, colour-blind separation ≥ 10.8 ΔE) */
+/*            fill      panel (text on it)       deep (accent text, ≥ 7:1)  tint     */
+--blue:     #2559D6   #2559D6 white 6.0:1       #2150C2                    #EBEFFA
+--coral:    #E04F39   #D83A22 white 4.6:1       #A62C1A                    #FAEDEB
+--teal:     #009682   #008473 white 4.6:1       #006557                    #EBFAF8
+--saffron:  #D4891A   #D4891A INK   5.6:1       #7B500F                    #FAF4EB
+--plum:     #8A3FB0   #8A3FB0 white 6.1:1       #7E39A1                    #F4ECF8
+```
+- `fill` is for marks, strips and chart bars; `panel` is the fill used behind text; `deep` is the only shade allowed for small coloured text on white.
+- **Saffron never carries white text**: its panels use ink.
+- Category order is fixed (blue, coral, teal, saffron, plum) and is never re-sorted by value. The palette passed the dataviz validator (lightness band, chroma floor, colour-blind separation, normal-vision floor). Saffron is below 3:1 against white as a mark, so every chart carries direct value labels.
+
+**Type.** Figtree throughout.
+
+| Role | Size / leading | Style |
+|---|---|---|
+| Cover title | 72 pt | ExtraBold caps; year 60 pt in saffron |
+| Section number on band | 120 pt | ExtraBold, in the band colour mixed 38% toward white |
+| Band title | 30 / 32 pt | ExtraBold, sentence case |
+| Page title | 22 pt | ExtraBold caps |
+| Kicker | 7.5 pt | SemiBold caps, +40 tracking, in the section's deep shade |
+| KPI figure | 28 pt | ExtraBold, deep shade |
+| Body | 10 / 15 pt | Regular |
+
+**Grid.** Margins 22 / 20 mm, content 168 mm, two 80 mm text columns with an 8 mm gutter, chart + note split 104 / 8 / 56 mm.
+
+**Signature components**
+1. **Spectrum strip**: five equal segments across the top edge of every content page, 3 mm tall with 0.8 mm gaps. The current section's segment drops to a **10 mm tab**. This is the reader's map; on overview pages no tab drops.
+2. **Section band**: the first page of each section has a full-bleed band (0–112 mm) in the section's `panel` colour. It holds a giant pale number, a kicker, a 30 pt title, a lede and a white icon chip, with a 3 mm `fill` line under the band.
+3. **Bar-chart cover**: five full-height columns rising from the bottom edge in section order, with heights that echo the year's data. Section names sit at the top of each column.
+4. **KPI row**: three figures under a 1.5 pt rule in the section colour, deep-shade numerals, hairline dividers.
+5. **Tint card**: a case study on the section tint with a 4.5 pt left bar in the section `fill`.
+6. **Step tiles**: tint tiles with a 3 pt top bar, a big deep-shade number, a bold label and two lines.
+7. **Single-hue charts inside a section**: context bars at the fill mixed 55–62% toward white, the bar that matters in full `fill`, direct labels, one baseline.
+8. **Multicolour moments only where the whole is shown**: the overview tiles (one per section), a donut of spend by section with 2 pt white gaps and the total in the centre, stacked columns with white gaps, and a five-colour timeline of the year's moments.
+
+**Pages**
+- **Cover**: ink page with the five-column composition in the lower half, title "IMPACT REPORT" 72 pt white, the year in saffron.
+- **Contents**: rows with a 10 mm colour square per section, the title 15 pt, a description, and the page number in that section's deep shade.
+- **Foreword**: a 26 pt pull quote with a coral quote mark, two text columns, then "2025 in five moments", one coloured top-rule cell per section.
+- **At a glance**: a 2×2 grid of tint tiles (icon chip, kicker, 30 pt figure, caption) plus a donut and legend of spend by section.
+- **Section, page 1**: section band, KPI row, two text columns.
+- **Section, page 2**: the strip with the section's tab; a page title; then one of a chart + note, a table (section-colour header row, tint zebra, total row with a 1.5 pt colour rule), a line chart + step tiles, or bars + case card + quote.
+- **Finance**: strip with the plum tab; stacked columns by section in the fixed order, legend, and an income/spend table.
+- **Back cover**: ink page, one sentence, a five-colour segmented bar.
+
+**Don't:**
+- Give two sections the same colour, or use a section's colour inside another section.
+- Put white text on coral, teal or saffron `fill`. Use `panel`, or ink on saffron.
+- Use more than five colours.
+- Colour bars by their value.
+- Use the multicolour treatment on a single-topic report.
+
+**Example:** `.claude/skills/design-picker/examples/spectrum-impact/` (14-page build script, DOCX, PDF, contact sheet).
 
 ---
 

@@ -18,6 +18,7 @@ The seven families are extracted from the boards in `.claude/skills/report-desig
 | E | Clinicare Aqua | Clinicare | clinical, patient and public-health reports |
 | F | Docoro Royal Block | Docoro | healthcare services brochures |
 | G | Market Frame | Market | consulting, white papers, proposals |
+| H | Spectrum (multicolour) | all boards | impact or annual reports with 3–5 colour-coded programmes |
 
 Design system for building documents like the boards: [`DESIGN.md`](DESIGN.md).
 
