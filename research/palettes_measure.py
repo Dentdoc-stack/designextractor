@@ -291,53 +291,162 @@ def measure(L):
     return res
 
 # ----------------------------------------------------------------------------- derivation
-# Canonical measured colours, picked from phase-1 output (see palettes.md §2).
+# Canonical measured colours, picked from phase-1 output (see palettes.md section 2).
+# Every hex below is a measured cluster median unless marked "derived".
 FAMILIES = {
-    # id: refs, measured accent (brand fill), measured deep (or None), measured bright (or None),
-    #     measured tint (or None), measured page grey
+    "navy": {"refs": ["A"], "accent": "1C2E60",       # A cover/panel fill (k-means cluster 172A5C; flat cover sample 1C2E60)
+             "bright": "5398BA",                       # A "2025" numerals on navy cover
+             "page_grey": "F2F3F4",                    # A ground measured E6E5E6 is mock-up lighting; DESIGN-user value used
+             "ramp_seen": ["778FB4", "4A6E9F", "2A447E", "1B2E5A"]},  # A bar chart, light->deep
+    "royal": {"refs": ["F"], "accent": "0339A6", "page_grey": "F2F2F2"},
+    "teal": {"refs": ["G", "D"], "accent": "01A19A",   # G fill; D 379A86 is dE2000 5.9 away -> same family
+             "mid_seen": "018780", "variants": {"D": "379A86"}, "page_grey": "EEEEEE"},
+    "forest": {"refs": ["B"], "accent": "005A58",      # B dark-mode ground / slabs
+               "bright": "118A6B",                     # B secondary green bars (gradient towards 22B380)
+               "page_grey": "F2F3F4", "dark_ground": "005A58"},
+    "aqua": {"refs": ["E"], "accent": "4CC0CB", "tint": "E0FEFE", "page_grey": "EDEFEF"},
+    "green": {"refs": ["C"], "accent": "57B848", "page_grey": "F5F5F5", "ink": "141414"},
 }
+NEUTRALS = {"ink": "1F1F1F", "ink_soft": "5C5C5C", "rule": "BFBFBF", "hairline": "D9D9D9"}
+MIN_INK_NEUTRAL = 6.0   # % — a page band lighter than this risks vanishing on office lasers
+MIN_INK_TINT = 7.0      # % on the strongest channel for chromatic panel tints
 
-def find_L(H, C, target, against, lighter=False, lo=0.05, hi=0.99):
-    """Highest (or lowest, if lighter) OKLCH lightness with contrast >= target vs `against`."""
-    best = None
-    for L in np.arange(hi, lo, -0.0025) if not lighter else np.arange(lo, hi, 0.0025):
+def max_ink(h): return max(naive_cmyk(h))
+
+def darken_until(h, pct):
+    L, C, H = oklch(h)
+    while max_ink(h) < pct and L > 0.5:
+        L -= 0.002; h = oklch_hex(L, C, H)
+    return h
+
+def find_L(H, C, target, against_list, lo=0.05, hi=0.99):
+    """Highest OKLCH lightness (hue fixed, chroma gamut-clipped) reaching `target` vs every colour in against_list."""
+    for L in np.arange(hi, lo, -0.0025):
         hx = oklch_hex(L, C, H)
-        if contrast(hx, against) >= target: return L, hx
-    return best
+        if all(contrast(hx, a) >= target for a in against_list): return float(L), hx
+    raise ValueError
 
-def derive(fam):
-    paper, paper_alt = "FFFFFF", fam["paper_alt"]
+def pick_signal(refs_hex, backgrounds):
+    best = None
+    for H in list(range(345, 360)) + list(range(0, 61)):
+        L, hx = find_L(H, 0.20, 4.5, backgrounds)
+        score = min(min(de2000(hx, r), de2000(simulate(hx, "deutan"), simulate(r, "deutan")),
+                        de2000(simulate(hx, "protan"), simulate(r, "protan"))) for r in refs_hex)
+        score -= 0.05 * abs(((H - 30 + 180) % 360) - 180)   # mild preference for a true red-orange
+        if best is None or score > best[0]: best = (score, hx, H)
+    return best[1]
+
+def ramp_for(accent, deep, H, L_light=0.87):
+    """5 single-hue OKLCH steps light->deep. The brand accent is pinned to the interior step
+    (1..3) that maximises the smallest adjacent dE2000; lightness is linear on each side of it."""
+    La, Ca, _ = oklch(accent); Ld, Cd, _ = oklch(deep)
+    Cs = np.interp(range(5), [0, 2, 4], [0.55 * Ca, Ca, max(Cd, 0.6 * Ca)])
+    cands = []
+    for k in (1, 2, 3):
+        if not (L_light > La > Ld): break
+        Ls = np.empty(5)
+        Ls[:k + 1] = np.linspace(L_light, La, k + 1); Ls[k:] = np.linspace(La, Ld, 5 - k)
+        out = [oklch_hex(l, c, H) for l, c in zip(Ls, Cs)]
+        out[k] = accent; out[-1] = deep
+        cands.append(out)
+    if not cands:   # accent is the darkest step (navy, royal, forest)
+        out = [oklch_hex(l, c, H) for l, c in zip(np.linspace(L_light, Ld, 5), Cs)]
+        out[-1] = deep
+        cands.append(out)
+    return max(cands, key=lambda o: min(de2000(o[i], o[i + 1]) for i in range(4)))
+
+def derive(fid, fam):
+    ink = fam.get("ink", NEUTRALS["ink"])
+    paper = "FFFFFF"
+    paper_alt = darken_until(fam["page_grey"], MIN_INK_NEUTRAL)
     acc = fam["accent"]; La, Ca, Ha = oklch(acc)
-    # accent_deep: measured deep if it reaches 7:1 on paper_alt, else darken in OKLCH
-    deep = fam.get("deep")
-    if not deep or contrast(deep, paper_alt) < 7:
-        src = deep or acc
-        Ls, Cs, Hs = oklch(src)
-        Hs = Ha  # keep the brand hue
-        L, deep = find_L(Hs, Cs, 7.0, paper_alt)
-    bright = fam.get("bright") or acc
-    tint = fam.get("tint")
-    if not tint:
-        tint = oklch_hex(0.955, min(0.035, Ca * 0.3), Ha)
-    # chart ramp: 5 OKLCH steps, lightness from 0.86 to the deep shade, chroma bell-shaped
-    Ld, Cd, _ = oklch(deep)
-    Ls = np.linspace(0.86, Ld, 5)
-    Cmax = max(Ca, Cd)
-    ramp = [oklch_hex(l, Cmax * (0.45 + 0.55 * np.sin(np.pi * (0.25 + 0.75 * i / 4))), Ha) for i, l in enumerate(Ls)]
-    ramp[-1] = deep
-    color = {
-        "ink": fam["ink"], "ink_soft": fam["ink_soft"], "paper": paper, "paper_alt": paper_alt,
-        "rule": fam["rule"], "hairline": fam["hairline"],
-        "accent_deep": deep, "accent": acc, "accent_bright": bright, "accent_tint": tint,
-        "on_accent": "FFFFFF" if contrast("FFFFFF", acc) >= contrast(fam["ink"], acc) else fam["ink"],
-        "signal": fam["signal"],
-        # legacy keys used by scripts/reportkit.py
-        "tint": paper_alt, "grey": fam["ink_soft"],
-    }
+    if contrast(acc, paper_alt) >= 7: deep = acc
+    else: _, deep = find_L(Ha, Ca, 7.0, [paper, paper_alt])
+    bright = fam.get("bright", acc)
+    tint = fam.get("tint") or oklch_hex(0.955, min(0.04, 0.35 * Ca), Ha)
+    tint = darken_until(tint, MIN_INK_TINT)
+    w = contrast("FFFFFF", acc)
+    on_acc = "FFFFFF" if w >= 3.0 else ink
+    sig = pick_signal([acc, deep, bright], [paper, paper_alt, tint])
+    color = {"ink": ink, "ink_soft": NEUTRALS["ink_soft"], "paper": paper, "paper_alt": paper_alt,
+             "rule": NEUTRALS["rule"], "hairline": NEUTRALS["hairline"],
+             "accent_deep": deep, "accent": acc, "accent_bright": bright, "accent_tint": tint,
+             "on_accent": on_acc, "signal": sig,
+             "tint": paper_alt, "grey": NEUTRALS["ink_soft"]}   # legacy keys read by scripts/reportkit.py
+    if "dark_ground" in fam: color["dark_ground"] = fam["dark_ground"]
+    ramp = ramp_for(acc, deep, Ha)
     return color, ramp
+
+def flags(c):
+    return "AAA" if c >= 7 else "AA" if c >= 4.5 else "large/graphics" if c >= 3 else "FAIL"
+
+def tables(meas):
+    out = []
+    for L, r in meas.items():
+        pg = (r["neutrals"].get("page grey (L* 90-97.5)") or {}).get("median_hex", "F2F3F4")
+        out.append(f"\n#### ref-{L} — {r['thumbnails']} thumbnails, {r['pixels']:,} px; flat {r['flat_share']:.0%}, "
+                   f"photo/text/edges {r['photo_text_share']:.0%}; page grey used for contrast: #{pg}\n")
+        out.append("| role | hex | area % (all) | % of chromatic flat | OKLCH L C h | on white | on page grey | white on it | print C/M/Y/K % |")
+        out.append("|---|---|---|---|---|---|---|---|---|")
+        rows = []
+        for c in r["clusters"]:
+            if c["share_chromatic"] < 0.02 and c["share_all"] < 0.005: continue
+            rows.append(("chromatic cluster", c["hex"], c["share_all"], c["share_chromatic"], c["oklch"]))
+        if r["tint"]: rows.append(("accent tint", r["tint"]["hex"], r["tint"]["share_all"], None, None))
+        for k, v in r["neutrals"].items():
+            if v and v["share_all"] >= 0.001: rows.append(("neutral " + k, v["median_hex"], v["share_all"], None, None))
+        rows.append(("ink estimate [uncertain]", r["ink_estimate"]["hex"], None, None, None))
+        for role, hx, sa, sc, ok in rows:
+            ok = ok or [round(v, 3) for v in oklch(hx)]
+            cw, cg, wo = contrast(hx, "FFFFFF"), contrast(hx, pg), contrast("FFFFFF", hx)
+            out.append(f"| {role} | `{hx}` | {'' if sa is None else f'{100*sa:.1f}'} | {'' if sc is None else f'{100*sc:.0f}'} | "
+                       f"{ok[0]:.3f} {ok[1]:.3f} {ok[2]:.0f} | {cw:.2f} {flags(cw)} | {cg:.2f} {flags(cg)} | {wo:.2f} {flags(wo)} | "
+                       f"{'/'.join(map(str, naive_cmyk(hx)))} |")
+    return "\n".join(out)
+
+def derived_tables(pal):
+    out = []
+    for fid, p in pal.items():
+        c = p["color"]
+        out.append(f"\n#### {fid} (refs {', '.join(p['source_refs'])})\n")
+        out.append("| token | hex | on white | on paper_alt | on accent_tint | white on it | naive C/M/Y/K % (TAC) | dE2000 vs white |")
+        out.append("|---|---|---|---|---|---|---|---|")
+        for k in ["ink", "ink_soft", "paper", "paper_alt", "rule", "hairline", "accent_deep", "accent", "accent_bright",
+                  "accent_tint", "on_accent", "signal", "dark_ground"]:
+            if k not in c: continue
+            hx = c[k]
+            out.append(f"| {k} | `{hx}` | {contrast(hx,'FFFFFF'):.2f} | {contrast(hx,c['paper_alt']):.2f} | "
+                       f"{contrast(hx,c['accent_tint']):.2f} | {contrast('FFFFFF',hx):.2f} | {'/'.join(map(str, naive_cmyk(hx)))} ({sum(naive_cmyk(hx))}) | {de2000(hx,'FFFFFF'):.1f} |")
+        r = p["chart_series"]
+        steps = " → ".join(f"`{h}`" for h in r)
+        des = ", ".join(f"{de2000(r[i], r[i+1]):.1f}" for i in range(4))
+        dsim = ", ".join(f"{de2000(simulate(r[i],'deutan'), simulate(r[i+1],'deutan')):.1f}" for i in range(4))
+        cw = ", ".join(f"{contrast(h,'FFFFFF'):.2f}" for h in r)
+        out.append(f"\nchart ramp light→deep: {steps}  \nadjacent ΔE2000: {des} (deuteranope-simulated: {dsim})  \n"
+                   f"contrast of each step on white: {cw}  \n"
+                   f"signal vs accent ΔE2000 normal/deutan/protan: {de2000(c['signal'],c['accent']):.1f} / "
+                   f"{de2000(simulate(c['signal'],'deutan'),simulate(c['accent'],'deutan')):.1f} / "
+                   f"{de2000(simulate(c['signal'],'protan'),simulate(c['accent'],'protan')):.1f}; "
+                   f"signal vs accent_deep: {de2000(c['signal'],c['accent_deep']):.1f} / "
+                   f"{de2000(simulate(c['signal'],'deutan'),simulate(c['accent_deep'],'deutan')):.1f} / "
+                   f"{de2000(simulate(c['signal'],'protan'),simulate(c['accent_deep'],'protan')):.1f}")
+        if "ramp_seen" in FAMILIES[fid]:
+            out.append(f"  \nmeasured chart shades on the board: {', '.join('`'+h+'`' for h in FAMILIES[fid]['ramp_seen'])}")
+    return "\n".join(out)
 
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "measure"
     if mode == "measure":
-        allres = {L: measure(L) for L in "ABCDEFG"}
-        print(json.dumps(allres, indent=1))
+        print(json.dumps({L: measure(L) for L in "ABCDEFG"}, indent=1))
+    elif mode == "tables":
+        print(tables({L: measure(L) for L in "ABCDEFG"}))
+    elif mode == "derive":
+        pal = {}
+        for fid, fam in FAMILIES.items():
+            color, ramp = derive(fid, fam)
+            entry = {"source_refs": ["ref-" + r for r in fam["refs"]], "canonical_measured": fam["accent"],
+                     "color": color, "chart_series": ramp}
+            if "variants" in fam: entry["variants"] = fam["variants"]
+            pal[fid] = entry
+        with open(OUT_JSON, "w") as f: json.dump(pal, f, indent=2)
+        print(derived_tables(pal))
