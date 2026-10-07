@@ -274,6 +274,14 @@ def measure(L):
         mode = np.array([top // 65536, top // 256 % 256, top % 256]) + 1
         nb[name] = {"mode_hex": rgb2hex(mode), "median_hex": rgb2hex(np.median(Rn[mm], 0)), "share_all": float(mm.sum() / N)}
     res["neutrals"] = nb
+    # light accent tints: flat, L*>88, 3<=C*<=20, Lab hue within 25 deg of the main cluster
+    main = rgb_to_lab(hex2rgb(res["clusters"][0]["hex"]))
+    hmain = np.degrees(np.arctan2(main[2], main[1]))
+    hue = np.degrees(np.arctan2(lab[:, 2], lab[:, 1]))
+    dh = np.abs((hue - hmain + 180) % 360 - 180)
+    tm = fl & (lab[:, 0] > 88) & (chroma >= 3) & (chroma <= 20) & (dh < 25)
+    res["tint"] = ({"hex": rgb2hex(np.median(rgb[tm], 0)), "share_all": float(tm.mean())}
+                   if tm.sum() > 200 else None)
     res["neutral_flat_share"] = float(neu.mean())
     # ink: darkest 2 % of near-neutral pixels (any flatness)
     nn = chroma < 8
