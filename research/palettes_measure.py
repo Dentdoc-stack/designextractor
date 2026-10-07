@@ -386,7 +386,7 @@ def tables(meas):
         pg = (r["neutrals"].get("page grey (L* 90-97.5)") or {}).get("median_hex", "F2F3F4")
         out.append(f"\n#### ref-{L} — {r['thumbnails']} thumbnails, {r['pixels']:,} px; flat {r['flat_share']:.0%}, "
                    f"photo/text/edges {r['photo_text_share']:.0%}; page grey used for contrast: #{pg}\n")
-        out.append("| role | hex | area % (all) | % of chromatic flat | OKLCH L C h | on white | on page grey | white on it | print C/M/Y/K % |")
+        out.append("| role | hex | area % (all) | % of chromatic flat | OKLCH L C h | on white (= white text on it) | on page grey | ink 1F1F1F on it | naive C/M/Y/K % |")
         out.append("|---|---|---|---|---|---|---|---|---|")
         rows = []
         for c in r["clusters"]:
@@ -398,7 +398,7 @@ def tables(meas):
         rows.append(("ink estimate [uncertain]", r["ink_estimate"]["hex"], None, None, None))
         for role, hx, sa, sc, ok in rows:
             ok = ok or [round(v, 3) for v in oklch(hx)]
-            cw, cg, wo = contrast(hx, "FFFFFF"), contrast(hx, pg), contrast("FFFFFF", hx)
+            cw, cg, wo = contrast(hx, "FFFFFF"), contrast(hx, pg), contrast("1F1F1F", hx)
             out.append(f"| {role} | `{hx}` | {'' if sa is None else f'{100*sa:.1f}'} | {'' if sc is None else f'{100*sc:.0f}'} | "
                        f"{ok[0]:.3f} {ok[1]:.3f} {ok[2]:.0f} | {cw:.2f} {flags(cw)} | {cg:.2f} {flags(cg)} | {wo:.2f} {flags(wo)} | "
                        f"{'/'.join(map(str, naive_cmyk(hx)))} |")
@@ -409,14 +409,14 @@ def derived_tables(pal):
     for fid, p in pal.items():
         c = p["color"]
         out.append(f"\n#### {fid} (refs {', '.join(p['source_refs'])})\n")
-        out.append("| token | hex | on white | on paper_alt | on accent_tint | white on it | naive C/M/Y/K % (TAC) | dE2000 vs white |")
+        out.append("| token | hex | on white | on paper_alt | on accent_tint | ink on it | naive C/M/Y/K % (TAC) | dE2000 vs white |")
         out.append("|---|---|---|---|---|---|---|---|")
         for k in ["ink", "ink_soft", "paper", "paper_alt", "rule", "hairline", "accent_deep", "accent", "accent_bright",
                   "accent_tint", "on_accent", "signal", "dark_ground"]:
             if k not in c: continue
             hx = c[k]
             out.append(f"| {k} | `{hx}` | {contrast(hx,'FFFFFF'):.2f} | {contrast(hx,c['paper_alt']):.2f} | "
-                       f"{contrast(hx,c['accent_tint']):.2f} | {contrast('FFFFFF',hx):.2f} | {'/'.join(map(str, naive_cmyk(hx)))} ({sum(naive_cmyk(hx))}) | {de2000(hx,'FFFFFF'):.1f} |")
+                       f"{contrast(hx,c['accent_tint']):.2f} | {contrast(c['ink'],hx):.2f} | {'/'.join(map(str, naive_cmyk(hx)))} ({sum(naive_cmyk(hx))}) | {de2000(hx,'FFFFFF'):.1f} |")
         r = p["chart_series"]
         steps = " → ".join(f"`{h}`" for h in r)
         des = ", ".join(f"{de2000(r[i], r[i+1]):.1f}" for i in range(4))
