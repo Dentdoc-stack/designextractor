@@ -7,6 +7,8 @@ description: Build professional, editorially designed reports as DOCX (A4) with 
 
 Turns supplied content into a designed DOCX report with a fixed design identity and deliberate page variation. Output is validated by rendering to PDF and inspecting every page.
 
+**Choosing a design first.** "Slab & Rule" is one restrained style and does not follow the reference boards. To decide which of the seven board-derived design families a document should use, run the `design-picker` skill (`../design-picker/SKILL.md`). Its `--tokens-out` file can be passed to this engine with `REPORT_TOKENS=path/tokens.json`. That swaps colours and fonts; the layouts stay Slab & Rule until the engine gains per-family layouts.
+
 ## Files
 
 | Path | Purpose |

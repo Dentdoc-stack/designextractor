@@ -524,7 +524,7 @@ points; `check_rhythm(plan)` validates a page plan against R1–R7. Running the 
 examples above. Suggested location in the skill: `scripts/select_family.py` [inferred].
 
 ```python
-"""Deterministic design-family selector (reference implementation for research/selection.md)."""
+"""Deterministic design-family selector (reference implementation for .claude/skills/design-picker/references/selection-framework.md)."""
 import colorsys, json, sys
 
 FAMILIES = "ABCDEFG"

@@ -2,8 +2,8 @@
 """Colour measurement + palette derivation for reference boards ref-A … ref-G.
 
 Usage (numpy + Pillow only):
-    .venv/bin/python research/palettes_measure.py measure  > measurements.md   # phase 1
-    .venv/bin/python research/palettes_measure.py derive                         # phase 2, writes research/palettes.json
+    .venv/bin/python .claude/skills/design-picker/scripts/palettes_measure.py measure  > measurements.md   # phase 1
+    .venv/bin/python .claude/skills/design-picker/scripts/palettes_measure.py derive                         # phase 2, writes .claude/skills/design-picker/assets/palettes.json
 
 Phase 1 (measure)
   1. Segment each board into thumbnails (page content) and drop the Pinterest
@@ -25,9 +25,9 @@ import json, sys, os
 import numpy as np
 from PIL import Image
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../.."))
 IMG = os.path.join(ROOT, ".claude/skills/report-design/references/images/ref-%s.jpeg")
-OUT_JSON = os.path.join(ROOT, "research/palettes.json")
+OUT_JSON = os.path.join(ROOT, ".claude/skills/design-picker/assets/palettes.json")
 
 # ----------------------------------------------------------------------------- colour math
 def srgb_to_lin(c):

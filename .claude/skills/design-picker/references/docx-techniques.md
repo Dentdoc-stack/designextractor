@@ -1,6 +1,6 @@
 # DOCX feasibility: can python-docx + LibreOffice produce the boards' look?
 
-I tested each technique by building a small DOCX with python-docx 1.2, converting it with LibreOffice 24.2.7 (`soffice --headless --convert-to pdf`), and checking the result two ways: by eye (pdftoppm PNGs) and by measurement (pymupdf `get_drawings()`, `get_text('dict')`, `get_image_info()`, and `pdffonts`). The test scripts are in `/tmp/feas/` (scratch, not kept in the repo). Proof images are in `research/assets/proofs/`.
+I tested each technique by building a small DOCX with python-docx 1.2, converting it with LibreOffice 24.2.7 (`soffice --headless --convert-to pdf`), and checking the result two ways: by eye (pdftoppm PNGs) and by measurement (pymupdf `get_drawings()`, `get_text('dict')`, `get_image_info()`, and `pdffonts`). The test scripts are in `/tmp/feas/` (scratch, not kept in the repo). Proof images are in `.claude/skills/design-picker/assets/proofs/`.
 
 Tags: **[seen]** = rendered and measured here. **[inferred]** = follows from what I saw but was not tested directly. **[uncertain]** = not testable here. Microsoft Word is not available in this environment, so every Word-compatibility statement is [inferred] or [uncertain].
 
@@ -15,7 +15,7 @@ Tags: **[seen]** = rendered and measured here. **[inferred]** = follows from wha
 
 **Source.** I took the fonts from the npm registry: `@expo-google-fonts/poppins@0.4.1`, `@expo-google-fonts/montserrat@0.4.2` and `@expo-google-fonts/inter@0.4.2`. Each package ships static TTFs and an OFL-1.1 licence file (`LICENSE_FONT`). Tarball URL pattern: `https://registry.npmjs.org/@expo-google-fonts/poppins/-/poppins-0.4.1.tgz`.
 
-**Saved to `research/assets/fonts/`.** For each family I kept 8 weights: Regular, Italic, Medium, SemiBold, SemiBoldItalic, Bold, BoldItalic, ExtraBold. Files are named `Family-Style.ttf`, with licences in `OFL-Poppins.txt`, `OFL-Montserrat.txt` and `OFL-Inter.txt`. Total size is 6.6 MB. Poppins and Montserrat are also installed in `~/.fonts` (then `fc-cache -f`). Inter was already installed system-wide as OTF (`/usr/share/fonts/opentype/inter/`). I bundled Inter TTFs anyway so the skill does not depend on the host machine.
+**Saved to `.claude/skills/design-picker/assets/fonts/`.** For each family I kept 8 weights: Regular, Italic, Medium, SemiBold, SemiBoldItalic, Bold, BoldItalic, ExtraBold. Files are named `Family-Style.ttf`, with licences in `OFL-Poppins.txt`, `OFL-Montserrat.txt` and `OFL-Inter.txt`. Total size is 6.6 MB. Poppins and Montserrat are also installed in `~/.fonts` (then `fc-cache -f`). Inter was already installed system-wide as OTF (`/usr/share/fonts/opentype/inter/`). I bundled Inter TTFs anyway so the skill does not depend on the host machine.
 
 **Embedding.** `pdffonts` shows that every face is embedded and subset: `Poppins-Regular/Italic/Medium/SemiBold/Bold/BoldItalic/ExtraBold`, `Montserrat-Regular/SemiBold/Bold/ExtraBold` (TrueType), and `Inter-*` (Type 1/CFF, from the system OTFs). [seen] Proof: `assets/proofs/01-fonts.png`.
 
@@ -69,9 +69,9 @@ So the tokens' `leading` must be converted to exact points: `pf.line_spacing = P
 
 ## 2. Icons: Lucide line glyphs on solid accent circles. **Works**
 
-- **Source:** `lucide-static@1.52.0` from npm. It has 2130 SVGs at 24×24 using `stroke="currentColor"`. Licence is ISC, plus MIT for the icons derived from Feather. The licence is saved as `research/assets/icons-sample/LICENSE-lucide.txt`.
+- **Source:** `lucide-static@1.52.0` from npm. It has 2130 SVGs at 24×24 using `stroke="currentColor"`. Licence is ISC, plus MIT for the icons derived from Feather. The licence is saved as `.claude/skills/design-picker/assets/icons-sample/LICENSE-lucide.txt`.
 - **Renderer:** `cairosvg` (`pip install cairosvg`). libcairo is present on the system.
-- **Samples:** 5 icons at 12 mm and 300 dpi (142 px), white glyph on accent circle: `users.png`, `chart-column.png`, `heart-pulse.png`, `leaf.png`, `target.png` in `research/assets/icons-sample/`. They insert with `add_picture(width=Mm(10))`. Proofs: `assets/proofs/02-icon-chips.png` and `10-combined-split-page.png`. [seen]
+- **Samples:** 5 icons at 12 mm and 300 dpi (142 px), white glyph on accent circle: `users.png`, `chart-column.png`, `heart-pulse.png`, `leaf.png`, `target.png` in `.claude/skills/design-picker/assets/icons-sample/`. They insert with `add_picture(width=Mm(10))`. Proofs: `assets/proofs/02-icon-chips.png` and `10-combined-split-page.png`. [seen]
 
 ```python
 import re, cairosvg
@@ -234,7 +234,7 @@ Measured stroke positions (mm from each page edge): [seen] (`assets/proofs/07-in
 
 ## 9. Single-hue bar chart. **Works**
 
-matplotlib output at 300 dpi (1417×732 px for 120×62 mm, `dpi` metadata 300). Fonts are registered from `research/assets/fonts` with `font_manager.addfont`. Bars use shades of one accent from light to deep, with the most recent bar the deepest. Values are labelled directly in Poppins SemiBold. There are no gridlines and no y-axis, and the baseline is `#D9DBDB`. The figure is saved with a transparent background and placed with `add_picture(width=Mm(120))`. [seen] (`assets/proofs/09-single-hue-chart.png`)
+matplotlib output at 300 dpi (1417×732 px for 120×62 mm, `dpi` metadata 300). Fonts are registered from `.claude/skills/design-picker/assets/fonts` with `font_manager.addfont`. Bars use shades of one accent from light to deep, with the most recent bar the deepest. Values are labelled directly in Poppins SemiBold. There are no gridlines and no y-axis, and the baseline is `#D9DBDB`. The figure is saved with a transparent background and placed with `add_picture(width=Mm(120))`. [seen] (`assets/proofs/09-single-hue-chart.png`)
 ```python
 def shades(deep, n, light=0.78):            # lightest first, last == deep
     d = to_rgb('#' + deep)

@@ -1,0 +1,31 @@
+{
+  "title": "Quality and patient safety report 2025",
+  "audience": ["board", "regulator"],
+  "industry": "healthcare",
+  "words_per_page": 420,
+  "tables": 5,
+  "photos": "few",
+  "output": "office_print",
+  "a11y": "strict",
+  "editable": true,
+  "brand_hex": "#005EB8",
+  "sections": [
+    {"title": "Summary", "items": [{"type": "summary"}]},
+    {"title": "Safety", "items": [
+      {"type": "timeseries", "title": "Falls and infections, 5 years", "points": 5},
+      {"type": "table", "title": "Incidents by category", "columns": 6, "rows": 14},
+      {"type": "text", "title": "Learning from incidents", "words": 900}]},
+    {"title": "Effectiveness", "items": [
+      {"type": "timeseries", "title": "Mortality ratio", "points": 12},
+      {"type": "table", "title": "Clinical audit results", "columns": 5, "rows": 12},
+      {"type": "steps", "title": "Improvement programme", "count": 4}]},
+    {"title": "Patient experience", "items": [
+      {"type": "figures", "title": "Survey scores", "count": 4},
+      {"type": "quote", "title": "Patient voices", "count": 3},
+      {"type": "parts", "title": "Complaints by theme", "count": 7}]},
+    {"title": "Priorities", "items": [
+      {"type": "recommendations", "title": "Priorities 2026/27", "count": 5},
+      {"type": "table", "title": "Action plan", "columns": 5, "rows": 10},
+      {"type": "appendix", "title": "Definitions and data sources"}]}
+  ]
+}

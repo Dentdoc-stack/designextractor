@@ -1,5 +1,6 @@
 """reportkit: Slab & Rule design system for python-docx (A4 report layouts)."""
 import json
+import os
 import re
 from pathlib import Path
 
@@ -13,7 +14,7 @@ from docx.oxml.ns import qn
 from docx.shared import Mm, Pt, RGBColor
 
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
-T = json.loads((ASSETS / "tokens.json").read_text())
+T = json.loads(Path(os.environ.get("REPORT_TOKENS", ASSETS / "tokens.json")).read_text())  # design-picker --tokens-out
 C = T["color"]
 SERIF, SANS = T["font"]["serif"], T["font"]["sans"]
 PW, PH = T["page"]["size_mm"]
